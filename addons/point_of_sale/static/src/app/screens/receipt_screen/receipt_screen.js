@@ -27,6 +27,7 @@ export class ReceiptScreen extends Component {
             phone: partner?.mobile || "",
         });
         this.sendReceipt = useTrackedAsync(this._sendReceiptToCustomer.bind(this));
+        this.sendDigitalReceipt = useTrackedAsync(this._sendDigitalReceiptToCustomer.bind(this));
         this.doFullPrint = useTrackedAsync(() => this.pos.printReceipt());
         this.doBasicPrint = useTrackedAsync(() => this.pos.printReceipt({ basic: true }));
         onMounted(() => {
@@ -44,6 +45,11 @@ export class ReceiptScreen extends Component {
             action: "action_send_receipt",
             destination: this.state.email,
             name: "Email",
+        });
+    }
+    actionSendDigitalReceiptOnEmail() {
+        this.sendDigitalReceipt.call({
+            name: "digitalReceipt",
         });
     }
     get orderAmountPlusTip() {
@@ -95,6 +101,9 @@ export class ReceiptScreen extends Component {
             },
             { addClass: "pos-receipt-print p-3" }
         );
+    generateDigitalReceipt = async() =>
+        await this.pos.orderExportForPrinting(this.pos.get_order());
+
     async _sendReceiptToCustomer({ action, destination }) {
         const order = this.currentOrder;
         if (typeof order.id !== "number") {
@@ -114,6 +123,53 @@ export class ReceiptScreen extends Component {
             fullTicketImage,
             this.pos.basic_receipt ? basicTicketImage : null,
         ]);
+    }
+
+    async _sendDigitalReceiptToCustomer() {
+        const order = this.currentOrder;
+        if (typeof order.id !== "number") {
+            this.dialog.add(ConfirmationDialog, {
+                title: _t("Unsynced order"),
+                body: _t(
+                    "This order is not yet synced to server. Make sure it is synced then try again."
+                ),
+            });
+            return Promise.reject();
+        }
+        const receipt = await this.generateDigitalReceipt();
+        const n = receipt.orderlines.length;
+        const item = receipt.orderlines[0].productName;
+        const quantity = receipt.orderlines[0].qty;
+        const pu_price = receipt.orderlines[0].unitPrice;
+
+        const payload = {
+            store_name: "Demo",
+            items: [
+                {
+                    item: item,
+                    quantity: 1,
+                    unit: "pc",
+                    pu_price: 1.5
+                }
+            ]
+        }
+
+        console.log(payload);
+
+        let response = await fetch(
+            'http://3.140.249.247:3000/phone/3062306379/postReceipt',
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json; charset=utf-8",
+                },
+                body: JSON.stringify(payload),
+            }
+        ).then(function(response) {
+            return response.json();
+        }).then(function(data){
+            console.log(data);
+        })
     }
 }
 

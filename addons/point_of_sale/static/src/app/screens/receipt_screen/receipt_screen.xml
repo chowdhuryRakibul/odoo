@@ -25,6 +25,11 @@
                                         <i t-attf-class="fa {{doBasicPrint.status === 'loading' ? 'fa-fw fa-spin fa-circle-o-notch' : 'fa-print'}} me-1" />Print Basic Receipt
                                     </button>
                                 </div>
+                                <div class="d-flex gap-1">
+                                    <button class="button print btn btn-lg btn-secondary w-100 py-3" t-on-click="() => this.actionSendDigitalReceiptOnEmail()">
+                                            <i t-attf-class="fa {{doFullPrint.status === 'loading' ? 'fa-fw fa-spin fa-circle-o-notch' : 'fa-print'}} me-1" />Send Beyond Receipt
+                                    </button>
+                                </div>
                                 <div class="d-flex flex-column gap-2">
                                     <div class="d-flex">
                                         <input type="text" class="flex-grow-1 border p-3 bg-view pe-5 border-end-0 rounded-start-2 position-relative send-receipt-email-input" t-attf-placeholder="e.g. john.doe@mail.com" t-model="state.email" />
