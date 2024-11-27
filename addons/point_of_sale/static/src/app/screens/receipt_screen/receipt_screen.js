@@ -47,9 +47,18 @@ export class ReceiptScreen extends Component {
             name: "Email",
         });
     }
-    actionSendDigitalReceiptOnEmail() {
+    actionSendDigitalReceiptOnBarcode() {
         this.sendDigitalReceipt.call({
-            name: "digitalReceipt",
+            method: "barcode",
+            barcode: null,
+            phoneNumber: null,
+        });
+    }
+    actionSendDigitalReceiptOnPhone() {
+        this.sendDigitalReceipt.call({
+            method: "phone",
+            barcode: null,
+            phoneNumber: this.state.phone
         });
     }
     get orderAmountPlusTip() {
@@ -77,10 +86,10 @@ export class ReceiptScreen extends Component {
         return this.state.email && /^.+@.+$/.test(this.state.email);
     }
     get isValidPhone() {
-        return this.state.phone && /^\+?[()\d\s-.]{8,18}$/.test(this.state.phone);
+        return this.state.phone && /^\+?[()\d\s-.]{10}$/.test(this.state.phone);
     }
     showPhoneInput() {
-        return false;
+        return true;
     }
     orderDone() {
         this.currentOrder.uiState.screen_data.value = "";
@@ -125,7 +134,7 @@ export class ReceiptScreen extends Component {
         ]);
     }
 
-    async _sendDigitalReceiptToCustomer() {
+    async _sendDigitalReceiptToCustomer({method, barcode, phoneNumber}) {
         const order = this.currentOrder;
         if (typeof order.id !== "number") {
             this.dialog.add(ConfirmationDialog, {
@@ -154,10 +163,16 @@ export class ReceiptScreen extends Component {
             ]
         }
 
+        let url = 'http://3.140.249.247:3000/';
+        if (method == "phone") {
+            url = url + 'phone/';
+        }
+        url = url + (method == "barcode"? barcode : phoneNumber) + '/postReceipt';
+        console.log(url);
         console.log(payload);
 
         let response = await fetch(
-            'http://3.140.249.247:3000/phone/3062306379/postReceipt',
+            url,
             {
                 method: "POST",
                 headers: {
