@@ -147,20 +147,19 @@ export class ReceiptScreen extends Component {
         }
         const receipt = await this.generateDigitalReceipt();
         const n = receipt.orderlines.length;
-        const item = receipt.orderlines[0].productName;
-        const quantity = receipt.orderlines[0].qty;
-        const pu_price = receipt.orderlines[0].unitPrice;
 
         const payload = {
             store_name: "Demo",
-            items: [
-                {
-                    item: item,
-                    quantity: 1,
-                    unit: "pc",
-                    pu_price: 1.5
-                }
-            ]
+            items: []
+        }
+
+        for(var i=0; i<n; i++) {
+            payload["items"].push({
+                item: receipt.orderlines[i].productName,
+                quantity: Number(receipt.orderlines[i].qty),
+                unit: "pc",
+                pu_price: Number(receipt.orderlines[i].unitPrice.slice(1))
+            })
         }
 
         let url = 'http://3.140.249.247:3000/';
