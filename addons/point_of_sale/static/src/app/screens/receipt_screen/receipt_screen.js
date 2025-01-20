@@ -147,25 +147,29 @@ export class ReceiptScreen extends Component {
         }
         const receipt = await this.generateDigitalReceipt();
         const n = receipt.orderlines.length;
+        console.log(receipt);
 
         const payload = {
-            store_name: "Demo",
-            items: []
+            vendor_id: "678d3ce76743d5f06edde5b7",
+            store_id: "678d3cc16743d5f06edde5b3",
+            items: [],
+            tax: {pst: receipt.amount_tax, gst: 0},
+            payment_method: receipt.paymentlines[0].name,
+            total_price: receipt.amount_total,
         }
 
         for(var i=0; i<n; i++) {
             payload["items"].push({
                 item: receipt.orderlines[i].productName,
                 quantity: Number(receipt.orderlines[i].qty),
-                unit: "pc",
-                pu_price: Number(receipt.orderlines[i].unitPrice.slice(1))
+                unit: receipt.orderlines[i].unit,
+                pu_price: Number(receipt.orderlines[i].unitPrice.slice(1)),
+                total_price: Number(receipt.orderlines[i].price.slice(1)),
             })
         }
 
-        let url = 'http://3.140.249.247:3000/';
-        if (method == "phone") {
-            url = url + 'phone/';
-        }
+        // let url = 'http://3.140.249.247:3000/'; // AWS
+        let url = 'http://10.0.0.112:3000/' // localhost
         url = url + (method == "barcode"? barcode : phoneNumber) + '/postReceipt';
         console.log(url);
         console.log(payload);
